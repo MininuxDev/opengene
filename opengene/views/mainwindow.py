@@ -52,7 +52,7 @@ class MainWindow(QWidget):
         self.seq_records_window.populate(seq_records)
 
     def setup_display_seq_records(self):
-        self.seq_records_window = SequenceRecordsWindow()
+        self.seq_records_window = SequenceRecordsWindow(self.main_widget.mdiArea)
         self.main_widget.mdiArea.addSubWindow(self.seq_records_window)
         self.seq_records_window.destroyed.connect(self.destroy_seq_records_window)
         self.seq_records_window.show()

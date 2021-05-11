@@ -1,13 +1,13 @@
 
-from PySide2.QtCore import Qt, Signal, QSize, QEvent, QObject, Slot
+from PySide2.QtCore import Qt, QSize, QEvent
 from PySide2.QtGui import QFont, QFontMetrics
 from PySide2.QtWidgets import QWidget, QLabel, QSizePolicy, QToolButton, \
     QFrame, QSpinBox, QGridLayout, QSpacerItem, QScrollBar
 
 
 class SequenceRecordsWindow(QWidget):
-    def __init__(self):
-        super(SequenceRecordsWindow, self).__init__()
+    def __init__(self, parent):
+        super(SequenceRecordsWindow, self).__init__(parent)
         self.grid_layout = QGridLayout()
         self.grid_layout.setContentsMargins(0, 0, 0, 0)
         self.grid_layout.setSpacing(0)
@@ -38,7 +38,7 @@ class SequenceRecordsWindow(QWidget):
                 self.longest_seq_len = len(seq_record)
 
         self.update_char_nb()
-        self.seq_h_scroll_bar = QScrollBar(self)
+        self.seq_h_scroll_bar = QScrollBar(self, self.parent())
         self.seq_h_scroll_bar.setOrientation(Qt.Horizontal)
         self.seq_h_scroll_bar.setMinimum(0)
         self.seq_h_scroll_bar.setMaximum(self.longest_seq_len - self.char_nb)
