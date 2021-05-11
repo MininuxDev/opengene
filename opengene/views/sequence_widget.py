@@ -1,5 +1,5 @@
 
-from PySide2.QtCore import Qt, Signal, QSize, QEvent, QObject
+from PySide2.QtCore import Qt, Signal, QSize, QEvent, QObject, Slot
 from PySide2.QtGui import QFont, QFontMetrics
 from PySide2.QtWidgets import QWidget, QLabel, QSizePolicy, QToolButton, \
     QFrame, QSpinBox, QGridLayout, QSpacerItem, QScrollBar
@@ -34,18 +34,21 @@ class SequenceRecordsWindow(QWidget):
                 self.seq_record_items[-1].widgets[-1].installEventFilter(self)
                 self.grid_layout.addWidget(self.seq_record_items[-1].widgets[widget_index], row, col)
 
-            if len(seq_record) > self.longest_seq:
-                self.longest_seq = len(seq_record)
+            if len(seq_record) > self.longest_seq_len:
+                self.longest_seq_len = len(seq_record)
 
+        self.update_char_nb()
         self.seq_h_scroll_bar = QScrollBar(self)
         self.seq_h_scroll_bar.setOrientation(Qt.Horizontal)
         self.seq_h_scroll_bar.setMinimum(0)
-        self.seq_h_scroll_bar.setMaximum(self.longest_seq)
+        self.seq_h_scroll_bar.setMaximum(self.longest_seq_len - self.char_nb)
+        self.seq_h_scroll_bar.valueChanged.connect(self.move_seqs)
+
         self.grid_layout.addWidget(self.seq_h_scroll_bar, self.grid_layout.rowCount(), 5)
         self.grid_layout.addItem(QSpacerItem(1, 1))
         self.grid_layout.setRowStretch(self.grid_layout.rowCount(), 100)
 
-        self.display_all_seq(self)
+        self.display_all_seq()
 
     def clear(self):
         # TODO
@@ -54,6 +57,7 @@ class SequenceRecordsWindow(QWidget):
     def eventFilter(self, watched, event):
         if event.type() == QEvent.Resize:
             self.update_char_nb()
+            self.update_scrollbar()
             self.display_all_seq()
         return super(SequenceRecordsWindow, self).eventFilter(watched, event)
 
@@ -78,8 +82,16 @@ class SequenceRecordsWindow(QWidget):
 
         self.char_nb = len(test_str)
 
+    def update_scrollbar(self):
+        self.seq_h_scroll_bar.setMaximum(self.longest_seq_len - self.char_nb + 12)
+
+    def move_seqs(self, value):
+        print(value)
+        self.display_begin = value
+        self.display_all_seq()
+
     char_nb = 0
-    longest_seq = 0
+    longest_seq_len = 0
     display_begin = 0
 
 
@@ -136,4 +148,5 @@ class SequenceRecordLabel(QLabel):
         return QSize(40, 10)
 
     def display_seq(self, seq, display_begin, char_nb):
-        self.setText(str(seq[display_begin:char_nb]))
+        display_end = display_begin + char_nb
+        self.setText(str(seq[display_begin:display_end]))
