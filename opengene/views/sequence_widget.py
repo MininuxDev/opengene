@@ -19,35 +19,40 @@ class SequenceRecordsWindow(QWidget):
         self.seq_font.setFixedPitch(True)
         self.seq_font.setStyleHint(QFont.Monospace)
 
+
+        self.seq_h_scroll_bar = QScrollBar(self, self.parent())
+        self.seq_h_scroll_bar.setOrientation(Qt.Horizontal)
+        self.seq_h_scroll_bar.setMinimum(0)
+        self.seq_h_scroll_bar.setMaximum(self.longest_seq_len - self.char_nb)
+        self.seq_h_scroll_bar.valueChanged.connect(self.move_seqs)
+        self.grid_layout.addWidget(self.seq_h_scroll_bar, self.grid_layout.rowCount(), 5)
+
+        self.lower_spacer_item = QSpacerItem(1, 1, QSizePolicy.Minimum, QSizePolicy.MinimumExpanding)
+        self.grid_layout.addItem(self.lower_spacer_item)
+
         self.seq_record_items = []
 
     def sizeHint(self):  # Workaroud QTBUG-70305
         return self.parent().parent().size()
 
     def populate(self, seq_records):
-        self.clear()
+        self.grid_layout.removeWidget(self.seq_h_scroll_bar)
+        self.grid_layout.removeItem(self.lower_spacer_item)
+
         for seq_record in seq_records:
-            row = self.grid_layout.rowCount()
+            new_row = self.grid_layout.rowCount()
             self.seq_record_items.append(SequenceRecordItem(self, seq_record, self.seq_font))
             for widget_index in range(0, len(self.seq_record_items[-1].widgets)):
                 col = widget_index
-                self.seq_record_items[-1].widgets[-1].installEventFilter(self)
-                self.grid_layout.addWidget(self.seq_record_items[-1].widgets[widget_index], row, col)
+                self.seq_record_items[-1].seqLabel.installEventFilter(self)
+                self.grid_layout.addWidget(self.seq_record_items[-1].widgets[widget_index], new_row, col)
 
             if len(seq_record) > self.longest_seq_len:
                 self.longest_seq_len = len(seq_record)
 
         self.update_char_nb()
-        self.seq_h_scroll_bar = QScrollBar(self, self.parent())
-        self.seq_h_scroll_bar.setOrientation(Qt.Horizontal)
-        self.seq_h_scroll_bar.setMinimum(0)
-        self.seq_h_scroll_bar.setMaximum(self.longest_seq_len - self.char_nb)
-        self.seq_h_scroll_bar.valueChanged.connect(self.move_seqs)
-
         self.grid_layout.addWidget(self.seq_h_scroll_bar, self.grid_layout.rowCount(), 5)
-        self.grid_layout.addItem(QSpacerItem(1, 1))
-        self.grid_layout.setRowStretch(self.grid_layout.rowCount(), 100)
-
+        self.grid_layout.addItem(self.lower_spacer_item)
         self.display_all_seq()
 
     def clear(self):
